@@ -1,0 +1,1542 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>6MWT Clinical Calculator</title>
+
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: Arial, "Noto Sans Thai", sans-serif;
+        margin: 0;
+        padding: 20px;
+        background: #f4f7fb;
+        color: #1f2937;
+    }
+
+    .container {
+        max-width: 900px;
+        margin: auto;
+    }
+
+    .card {
+        background: white;
+        padding: 24px;
+        margin-bottom: 20px;
+        border-radius: 16px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.07);
+    }
+
+    h1 {
+        text-align: center;
+        margin-bottom: 5px;
+    }
+
+    .subtitle {
+        text-align: center;
+        color: #6b7280;
+        margin-bottom: 30px;
+    }
+
+    h2 {
+        margin-top: 0;
+        border-bottom: 1px solid #e5e7eb;
+        padding-bottom: 10px;
+    }
+
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+
+    .hr-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 6px;
+        font-weight: bold;
+    }
+
+    input, select {
+        width: 100%;
+        padding: 11px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 16px;
+    }
+
+    input:focus, select:focus {
+        outline: 2px solid #93c5fd;
+        border-color: #2563eb;
+    }
+
+    button {
+        border: none;
+        padding: 12px 20px;
+        border-radius: 8px;
+        font-size: 16px;
+        cursor: pointer;
+    }
+
+    .primary {
+        background: #2563eb;
+        color: white;
+    }
+
+    .secondary {
+        background: #e5e7eb;
+        color: #111827;
+    }
+
+    .danger {
+        background: #dc2626;
+        color: white;
+    }
+
+    .button-row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 15px;
+    }
+
+    /* TIMER */
+
+    .timer {
+        text-align: center;
+        font-size: 55px;
+        font-weight: bold;
+        margin: 20px 0 5px;
+    }
+
+    .timer-status {
+        text-align: center;
+        color: #6b7280;
+        font-weight: bold;
+        min-height: 25px;
+    }
+
+    .minute-active {
+        border: 2px solid #2563eb !important;
+        background: #eff6ff;
+    }
+
+    /* RESULTS */
+
+    #resultSection {
+        display: none;
+    }
+
+    .result-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+    }
+
+    .result-box {
+        background: #f8fafc;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 16px;
+    }
+
+    .result-label {
+        color: #6b7280;
+        font-size: 13px;
+        margin-bottom: 6px;
+    }
+
+    .result-value {
+        font-size: 22px;
+        font-weight: bold;
+    }
+
+    .highlight {
+        background: #eff6ff;
+    }
+
+    .warning {
+        margin-top: 20px;
+        padding: 15px;
+        background: #fff7ed;
+        border-radius: 10px;
+        font-size: 13px;
+        line-height: 1.6;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 15px;
+    }
+
+    th, td {
+        padding: 10px;
+        text-align: center;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    th {
+        background: #f8fafc;
+    }
+
+    canvas {
+        width: 100%;
+        max-height: 300px;
+        margin-top: 20px;
+    }
+
+    @media (max-width: 700px) {
+
+        .grid,
+        .result-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .hr-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .timer {
+            font-size: 45px;
+        }
+    }
+</style>
+</head>
+
+
+<body>
+
+<div class="container">
+
+    <h1>6-Minute Walk Test Calculator</h1>
+
+    <div class="subtitle">
+        6MWT • METs • VO₂ • Predicted Distance • Heart Rate Response
+    </div>
+
+
+    <!-- =========================
+         PATIENT INFORMATION
+    ========================== -->
+
+    <div class="card">
+
+        <h2>1. Patient Information</h2>
+
+        <div class="grid">
+
+            <div>
+                <label>Age (years)</label>
+                <input type="number" id="age"
+                       placeholder="เช่น 65">
+            </div>
+
+            <div>
+                <label>Sex</label>
+
+                <select id="sex">
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                </select>
+            </div>
+
+            <div>
+                <label>Height (cm)</label>
+                <input type="number" id="height"
+                       placeholder="เช่น 165">
+            </div>
+
+            <div>
+                <label>Weight (kg)</label>
+                <input type="number" id="weight"
+                       placeholder="เช่น 60">
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+         PRE TEST
+    ========================== -->
+
+    <div class="card">
+
+        <h2>2. Pre-test</h2>
+
+        <div class="grid">
+
+            <div>
+                <label>Resting HR (bpm)</label>
+                <input type="number" id="hrRest"
+                       placeholder="เช่น 72">
+            </div>
+
+            <div>
+                <label>Resting SpO₂ (%)</label>
+                <input type="number" id="spo2Rest"
+                       placeholder="เช่น 98">
+            </div>
+
+            <div>
+                <label>Systolic BP (mmHg)</label>
+                <input type="number" id="sbp"
+                       placeholder="เช่น 120">
+            </div>
+
+            <div>
+                <label>Diastolic BP (mmHg)</label>
+                <input type="number" id="dbp"
+                       placeholder="เช่น 75">
+            </div>
+
+            <div>
+                <label>Borg Dyspnea Pre-test</label>
+                <input type="number" id="borgPre"
+                       min="0" max="10"
+                       placeholder="0–10">
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+         6MWT TIMER
+    ========================== -->
+
+    <div class="card">
+
+        <h2>3. 6MWT Real-time Monitoring</h2>
+
+        <div class="timer" id="timer">
+            00:00
+        </div>
+
+        <div class="timer-status" id="timerStatus">
+            READY
+        </div>
+
+
+        <div class="button-row">
+
+            <button class="primary" id="startButton"
+                    onclick="startTest()">
+                Start 6MWT
+            </button>
+
+            <button class="secondary"
+                    onclick="pauseTest()">
+                Pause
+            </button>
+
+            <button class="danger"
+                    onclick="resetTest()">
+                Reset
+            </button>
+
+        </div>
+
+
+        <h3>Heart Rate During Test</h3>
+
+        <div class="hr-grid">
+
+            <div id="box1">
+                <label>Minute 1</label>
+                <input type="number" id="hr1"
+                       placeholder="HR bpm">
+            </div>
+
+            <div id="box2">
+                <label>Minute 2</label>
+                <input type="number" id="hr2"
+                       placeholder="HR bpm">
+            </div>
+
+            <div id="box3">
+                <label>Minute 3</label>
+                <input type="number" id="hr3"
+                       placeholder="HR bpm">
+            </div>
+
+            <div id="box4">
+                <label>Minute 4</label>
+                <input type="number" id="hr4"
+                       placeholder="HR bpm">
+            </div>
+
+            <div id="box5">
+                <label>Minute 5</label>
+                <input type="number" id="hr5"
+                       placeholder="HR bpm">
+            </div>
+
+            <div id="box6">
+                <label>Minute 6</label>
+                <input type="number" id="hr6"
+                       placeholder="HR bpm">
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+         POST TEST
+    ========================== -->
+
+    <div class="card">
+
+        <h2>4. Post-test</h2>
+
+        <div class="grid">
+
+            <div>
+                <label>Total 6MWT Distance (m)</label>
+                <input type="number" id="distance"
+                       placeholder="เช่น 450">
+            </div>
+
+            <div>
+                <label>End-test SpO₂ (%)</label>
+                <input type="number" id="spo2End"
+                       placeholder="เช่น 95">
+            </div>
+
+            <div>
+                <label>Recovery HR — 1 min (bpm)</label>
+                <input type="number" id="hrRecovery"
+                       placeholder="เช่น 88">
+            </div>
+
+            <div>
+                <label>Borg Dyspnea Post-test</label>
+                <input type="number" id="borgPost"
+                       min="0" max="10"
+                       placeholder="0–10">
+            </div>
+
+        </div>
+
+
+        <button class="primary"
+                style="width:100%; margin-top:20px;"
+                onclick="calculateResults()">
+
+            Calculate Results
+
+        </button>
+
+    </div>
+
+
+    <!-- =========================
+         RESULTS
+    ========================== -->
+
+    <div class="card" id="resultSection">
+
+        <h2>5. 6MWT Results</h2>
+
+        <div class="result-grid">
+
+
+            <div class="result-box highlight">
+
+                <div class="result-label">
+                    Actual 6MWD
+                </div>
+
+                <div class="result-value"
+                     id="actualDistance">
+                </div>
+
+            </div>
+
+
+            <div class="result-box">
+
+                <div class="result-label">
+                    Predicted 6MWD
+                </div>
+
+                <div class="result-value"
+                     id="predictedDistance">
+                </div>
+
+            </div>
+
+
+            <div class="result-box">
+
+                <div class="result-label">
+                    % Predicted
+                </div>
+
+                <div class="result-value"
+                     id="percentPredicted">
+                </div>
+
+            </div>
+
+
+            <div class="result-box">
+
+                <div class="result-label">
+                    BMI
+                </div>
+
+                <div class="result-value"
+                     id="bmi">
+                </div>
+
+            </div>
+
+
+            <div class="result-box">
+
+                <div class="result-label">
+                    Walking Speed
+                </div>
+
+                <div class="result-value"
+                     id="speed">
+                </div>
+
+            </div>
+
+
+            <div class="result-box">
+
+                <div class="result-label">
+                    Estimated Walking VO₂
+                </div>
+
+                <div class="result-value"
+                     id="walkingVO2">
+                </div>
+
+            </div>
+
+
+            <div class="result-box highlight">
+
+                <div class="result-label">
+                    Estimated METs
+                </div>
+
+                <div class="result-value"
+                     id="mets">
+                </div>
+
+            </div>
+
+
+            <div class="result-box highlight">
+
+                <div class="result-label">
+                    Estimated VO₂max
+                </div>
+
+                <div class="result-value"
+                     id="vo2max">
+                </div>
+
+            </div>
+
+
+            <div class="result-box">
+
+                <div class="result-label">
+                    Age-predicted HRmax
+                </div>
+
+                <div class="result-value"
+                     id="hrMax">
+                </div>
+
+            </div>
+
+
+            <div class="result-box">
+
+                <div class="result-label">
+                    End HR / HRmax
+                </div>
+
+                <div class="result-value"
+                     id="percentHRmax">
+                </div>
+
+            </div>
+
+
+            <div class="result-box">
+
+                <div class="result-label">
+                    ΔHR Rest → 6 min
+                </div>
+
+                <div class="result-value"
+                     id="deltaHR">
+                </div>
+
+            </div>
+
+
+            <div class="result-box">
+
+                <div class="result-label">
+                    HR Recovery 1 min
+                </div>
+
+                <div class="result-value"
+                     id="hrr">
+                </div>
+
+            </div>
+
+
+            <div class="result-box">
+
+                <div class="result-label">
+                    SpO₂ Change
+                </div>
+
+                <div class="result-value"
+                     id="spo2Change">
+                </div>
+
+            </div>
+
+
+        </div>
+
+
+        <!-- HR TABLE -->
+
+        <h3>Heart Rate Response</h3>
+
+        <table>
+
+            <thead>
+
+                <tr>
+                    <th>Time</th>
+                    <th>HR (bpm)</th>
+                </tr>
+
+            </thead>
+
+            <tbody id="hrTable">
+
+            </tbody>
+
+        </table>
+
+
+        <!-- GRAPH -->
+
+        <canvas id="hrChart"
+                width="800"
+                height="300">
+        </canvas>
+
+
+        <div class="warning">
+
+            <strong>Clinical note:</strong><br>
+
+            METs และ walking VO₂ เป็นค่าประมาณจากความเร็วเฉลี่ย
+            โดยใช้ ACSM level-walking equation
+
+            <br><br>
+
+            Estimated VO₂max จาก 6MWT เป็นค่าที่ได้จากสมการทำนาย
+            ไม่เทียบเท่ากับ VO₂peak/VO₂max ที่วัดโดยตรงด้วย CPET
+
+            <br><br>
+
+            Predicted 6MWD ต้องพิจารณาสมการอ้างอิง
+            อายุ เพศ ส่วนสูง น้ำหนัก และประชากรที่ใช้สร้างสมการด้วย
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+/* =====================================
+   TIMER
+===================================== */
+
+let seconds = 0;
+let timerInterval = null;
+let running = false;
+
+
+function startTest() {
+
+    if (running) return;
+
+    running = true;
+
+    document.getElementById("timerStatus").innerText =
+        "6MWT IN PROGRESS";
+
+    timerInterval = setInterval(function() {
+
+        seconds++;
+
+        updateTimer();
+
+        checkMinute();
+
+        if (seconds >= 360) {
+
+            clearInterval(timerInterval);
+
+            running = false;
+
+            document.getElementById("timerStatus").innerText =
+                "✓ 6MWT COMPLETE";
+
+            alert(
+                "ครบ 6 นาทีแล้ว\nกรอกระยะทางรวมและข้อมูลหลังการทดสอบ"
+            );
+        }
+
+    }, 1000);
+}
+
+
+function pauseTest() {
+
+    clearInterval(timerInterval);
+
+    running = false;
+
+    document.getElementById("timerStatus").innerText =
+        "PAUSED";
+}
+
+
+function resetTest() {
+
+    clearInterval(timerInterval);
+
+    running = false;
+
+    seconds = 0;
+
+    updateTimer();
+
+    document.getElementById("timerStatus").innerText =
+        "READY";
+
+    for (let i = 1; i <= 6; i++) {
+
+        document
+            .getElementById("box" + i)
+            .classList.remove("minute-active");
+    }
+}
+
+
+function updateTimer() {
+
+    const min =
+        Math.floor(seconds / 60);
+
+    const sec =
+        seconds % 60;
+
+    document.getElementById("timer").innerText =
+        String(min).padStart(2, "0")
+        +
+        ":"
+        +
+        String(sec).padStart(2, "0");
+}
+
+
+function checkMinute() {
+
+    if (
+        seconds === 60 ||
+        seconds === 120 ||
+        seconds === 180 ||
+        seconds === 240 ||
+        seconds === 300 ||
+        seconds === 360
+    ) {
+
+        const minute =
+            seconds / 60;
+
+        highlightMinute(minute);
+
+        document.getElementById("timerStatus").innerText =
+            "Record HR — Minute " + minute;
+
+        beep();
+
+        document
+            .getElementById("hr" + minute)
+            .focus();
+    }
+}
+
+
+function highlightMinute(minute) {
+
+    for (let i = 1; i <= 6; i++) {
+
+        document
+            .getElementById("box" + i)
+            .classList.remove("minute-active");
+    }
+
+    document
+        .getElementById("box" + minute)
+        .classList.add("minute-active");
+}
+
+
+/* =====================================
+   SIMPLE BEEP
+===================================== */
+
+function beep() {
+
+    try {
+
+        const AudioContext =
+            window.AudioContext ||
+            window.webkitAudioContext;
+
+        const context =
+            new AudioContext();
+
+        const oscillator =
+            context.createOscillator();
+
+        const gain =
+            context.createGain();
+
+        oscillator.connect(gain);
+
+        gain.connect(context.destination);
+
+        oscillator.frequency.value = 800;
+
+        gain.gain.value = 0.1;
+
+        oscillator.start();
+
+        oscillator.stop(
+            context.currentTime + 0.2
+        );
+
+    } catch (e) {
+
+        console.log("Audio not supported");
+
+    }
+}
+
+
+/* =====================================
+   CALCULATIONS
+===================================== */
+
+function calculateResults() {
+
+    const age =
+        parseFloat(
+            document.getElementById("age").value
+        );
+
+    const sex =
+        document.getElementById("sex").value;
+
+    const height =
+        parseFloat(
+            document.getElementById("height").value
+        );
+
+    const weight =
+        parseFloat(
+            document.getElementById("weight").value
+        );
+
+    const distance =
+        parseFloat(
+            document.getElementById("distance").value
+        );
+
+    const hrRest =
+        parseFloat(
+            document.getElementById("hrRest").value
+        );
+
+    const hr6 =
+        parseFloat(
+            document.getElementById("hr6").value
+        );
+
+    const hrRecovery =
+        parseFloat(
+            document.getElementById("hrRecovery").value
+        );
+
+
+    if (
+        isNaN(age) ||
+        isNaN(height) ||
+        isNaN(weight) ||
+        isNaN(distance)
+    ) {
+
+        alert(
+            "กรุณากรอก Age, Height, Weight และ 6MWT Distance"
+        );
+
+        return;
+    }
+
+
+    /* =========================
+       BMI
+    ========================= */
+
+    const heightMeter =
+        height / 100;
+
+    const BMI =
+        weight /
+        (heightMeter * heightMeter);
+
+
+    /* =========================
+       WALKING SPEED
+    ========================= */
+
+    const speed =
+        distance / 6;
+
+    const speedKmh =
+        speed * 0.06;
+
+
+    /* =========================
+       WALKING VO2
+       ACSM LEVEL WALKING
+    ========================= */
+
+    const walkingVO2 =
+        (0.1 * speed) + 3.5;
+
+
+    /* =========================
+       METs
+    ========================= */
+
+    const METs =
+        walkingVO2 / 3.5;
+
+
+    /* =========================
+       ESTIMATED VO2MAX
+    ========================= */
+
+    const VO2max =
+        (0.03 * distance) + 3.98;
+
+
+    /* =========================
+       PREDICTED 6MWD
+       ENRIGHT & SHERRILL
+    ========================= */
+
+    let predicted6MWD;
+
+    if (sex === "male") {
+
+        predicted6MWD =
+            (7.57 * height)
+            -
+            (5.02 * age)
+            -
+            (1.76 * weight)
+            -
+            309;
+
+    } else {
+
+        predicted6MWD =
+            (2.11 * height)
+            -
+            (2.29 * weight)
+            -
+            (5.78 * age)
+            +
+            667;
+    }
+
+
+    const percentPredicted =
+        (distance / predicted6MWD)
+        * 100;
+
+
+    /* =========================
+       HEART RATE
+    ========================= */
+
+    const predictedHRmax =
+        208 - (0.7 * age);
+
+
+    let percentHRmax = null;
+    let deltaHR = null;
+    let HRR = null;
+
+
+    if (
+        !isNaN(hr6)
+        &&
+        !isNaN(hrRest)
+    ) {
+
+        percentHRmax =
+            (hr6 / predictedHRmax)
+            * 100;
+
+        deltaHR =
+            hr6 - hrRest;
+    }
+
+
+    if (
+        !isNaN(hr6)
+        &&
+        !isNaN(hrRecovery)
+    ) {
+
+        HRR =
+            hr6 - hrRecovery;
+    }
+
+
+    /* =========================
+       SpO2
+    ========================= */
+
+    const spo2Rest =
+        parseFloat(
+            document.getElementById("spo2Rest").value
+        );
+
+    const spo2End =
+        parseFloat(
+            document.getElementById("spo2End").value
+        );
+
+
+    let spo2Change = null;
+
+    if (
+        !isNaN(spo2Rest)
+        &&
+        !isNaN(spo2End)
+    ) {
+
+        spo2Change =
+            spo2End - spo2Rest;
+    }
+
+
+    /* =========================
+       DISPLAY RESULTS
+    ========================= */
+
+    document.getElementById(
+        "actualDistance"
+    ).innerText =
+        distance.toFixed(0) + " m";
+
+
+    document.getElementById(
+        "predictedDistance"
+    ).innerText =
+        predicted6MWD.toFixed(0) + " m";
+
+
+    document.getElementById(
+        "percentPredicted"
+    ).innerText =
+        percentPredicted.toFixed(1) + " %";
+
+
+    document.getElementById(
+        "bmi"
+    ).innerText =
+        BMI.toFixed(1) + " kg/m²";
+
+
+    document.getElementById(
+        "speed"
+    ).innerText =
+        speed.toFixed(1)
+        +
+        " m/min\n"
+        +
+        speedKmh.toFixed(2)
+        +
+        " km/h";
+
+
+    document.getElementById(
+        "walkingVO2"
+    ).innerText =
+        walkingVO2.toFixed(2)
+        +
+        " mL/kg/min";
+
+
+    document.getElementById(
+        "mets"
+    ).innerText =
+        METs.toFixed(2)
+        +
+        " METs";
+
+
+    document.getElementById(
+        "vo2max"
+    ).innerText =
+        VO2max.toFixed(2)
+        +
+        " mL/kg/min";
+
+
+    document.getElementById(
+        "hrMax"
+    ).innerText =
+        predictedHRmax.toFixed(0)
+        +
+        " bpm";
+
+
+    document.getElementById(
+        "percentHRmax"
+    ).innerText =
+        percentHRmax !== null
+        ?
+        percentHRmax.toFixed(1) + " %"
+        :
+        "N/A";
+
+
+    document.getElementById(
+        "deltaHR"
+    ).innerText =
+        deltaHR !== null
+        ?
+        "+" + deltaHR.toFixed(0) + " bpm"
+        :
+        "N/A";
+
+
+    document.getElementById(
+        "hrr"
+    ).innerText =
+        HRR !== null
+        ?
+        HRR.toFixed(0) + " bpm"
+        :
+        "N/A";
+
+
+    document.getElementById(
+        "spo2Change"
+    ).innerText =
+        spo2Change !== null
+        ?
+        (
+            spo2Change > 0 ? "+" : ""
+        )
+        +
+        spo2Change.toFixed(0)
+        +
+        " %"
+        :
+        "N/A";
+
+
+    /* HR TABLE */
+
+    createHRTable();
+
+
+    /* HR GRAPH */
+
+    drawHRChart();
+
+
+    document.getElementById(
+        "resultSection"
+    ).style.display =
+        "block";
+
+
+    document.getElementById(
+        "resultSection"
+    ).scrollIntoView({
+        behavior: "smooth"
+    });
+}
+
+
+/* =====================================
+   HR TABLE
+===================================== */
+
+function createHRTable() {
+
+    const labels = [
+        "Rest",
+        "1 min",
+        "2 min",
+        "3 min",
+        "4 min",
+        "5 min",
+        "6 min",
+        "Recovery 1 min"
+    ];
+
+
+    const ids = [
+        "hrRest",
+        "hr1",
+        "hr2",
+        "hr3",
+        "hr4",
+        "hr5",
+        "hr6",
+        "hrRecovery"
+    ];
+
+
+    let html = "";
+
+
+    for (let i = 0; i < ids.length; i++) {
+
+        const value =
+            document
+            .getElementById(ids[i])
+            .value;
+
+        html += `
+            <tr>
+                <td>${labels[i]}</td>
+                <td>
+                    ${value || "-"}
+                </td>
+            </tr>
+        `;
+    }
+
+
+    document.getElementById(
+        "hrTable"
+    ).innerHTML =
+        html;
+}
+
+
+/* =====================================
+   HR GRAPH
+===================================== */
+
+function drawHRChart() {
+
+    const canvas =
+        document.getElementById(
+            "hrChart"
+        );
+
+    const ctx =
+        canvas.getContext("2d");
+
+
+    const ids = [
+        "hrRest",
+        "hr1",
+        "hr2",
+        "hr3",
+        "hr4",
+        "hr5",
+        "hr6",
+        "hrRecovery"
+    ];
+
+
+    const labels = [
+        "Rest",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "Recovery"
+    ];
+
+
+    const values =
+        ids.map(id => {
+
+            const value =
+                parseFloat(
+                    document
+                    .getElementById(id)
+                    .value
+                );
+
+            return isNaN(value)
+                ? null
+                : value;
+        });
+
+
+    ctx.clearRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+
+    const validValues =
+        values.filter(
+            v => v !== null
+        );
+
+
+    if (validValues.length < 2) {
+
+        ctx.font =
+            "16px Arial";
+
+        ctx.fillText(
+            "กรอก HR อย่างน้อย 2 ค่าเพื่อแสดงกราฟ",
+            30,
+            50
+        );
+
+        return;
+    }
+
+
+    const padding = 50;
+
+    const width =
+        canvas.width
+        -
+        padding * 2;
+
+    const height =
+        canvas.height
+        -
+        padding * 2;
+
+
+    const minHR =
+        Math.min(...validValues) - 10;
+
+    const maxHR =
+        Math.max(...validValues) + 10;
+
+
+    /* AXES */
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        padding,
+        padding
+    );
+
+    ctx.lineTo(
+        padding,
+        canvas.height - padding
+    );
+
+    ctx.lineTo(
+        canvas.width - padding,
+        canvas.height - padding
+    );
+
+    ctx.stroke();
+
+
+    /* LINE */
+
+    ctx.beginPath();
+
+    let started = false;
+
+
+    values.forEach(
+        (value, index) => {
+
+            if (value === null)
+                return;
+
+
+            const x =
+                padding
+                +
+                (
+                    index /
+                    (values.length - 1)
+                )
+                *
+                width;
+
+
+            const y =
+                canvas.height
+                -
+                padding
+                -
+                (
+                    (value - minHR)
+                    /
+                    (maxHR - minHR)
+                )
+                *
+                height;
+
+
+            if (!started) {
+
+                ctx.moveTo(x, y);
+
+                started = true;
+
+            } else {
+
+                ctx.lineTo(x, y);
+
+            }
+        }
+    );
+
+
+    ctx.stroke();
+
+
+    /* POINTS + LABELS */
+
+    values.forEach(
+        (value, index) => {
+
+            if (value === null)
+                return;
+
+
+            const x =
+                padding
+                +
+                (
+                    index /
+                    (values.length - 1)
+                )
+                *
+                width;
+
+
+            const y =
+                canvas.height
+                -
+                padding
+                -
+                (
+                    (value - minHR)
+                    /
+                    (maxHR - minHR)
+                )
+                *
+                height;
+
+
+            ctx.beginPath();
+
+            ctx.arc(
+                x,
+                y,
+                5,
+                0,
+                Math.PI * 2
+            );
+
+            ctx.fill();
+
+
+            ctx.font =
+                "13px Arial";
+
+
+            ctx.fillText(
+                value + "",
+                x - 10,
+                y - 10
+            );
+
+
+            ctx.fillText(
+                labels[index],
+                x - 12,
+                canvas.height - 25
+            );
+        }
+    );
+
+
+    ctx.font =
+        "bold 15px Arial";
+
+
+    ctx.fillText(
+        "Heart Rate Response During 6MWT",
+        padding,
+        25
+    );
+}
+
+</script>
+
+</body>
+</html>
